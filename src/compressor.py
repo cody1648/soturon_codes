@@ -94,12 +94,12 @@ class Compressor:
 					
 		return recursive_work(self.root)
 
-c = Compressor('./cmdTree.json', 1)
+c = Compressor('cmdTree_22-01-25-01-55.json', 1)
 
 c.countIncrement('access-profile ignore-sanity-checks <cr>')
 c.countIncrement('access-profile <cr>')
 
 c.wholeHuffmanEncode(c.root)
-print(RenderTree(c.root, maxlevel=7))
+print(RenderTree(c.root, maxlevel=10))
 print(c.encode('clear aaa cache filterserver acl\r\n'))
 
