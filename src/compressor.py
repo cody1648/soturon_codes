@@ -1,4 +1,3 @@
-from mimetypes import init
 from huffman import HuffmanCoding
 from huffman_encoder import HuffmanCoding
 from anytree.importer import *
