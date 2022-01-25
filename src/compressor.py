@@ -1,4 +1,3 @@
-import cmd
 from mimetypes import init
 from huffman import HuffmanCoding
 from huffman_encoder import HuffmanCoding
