@@ -11,7 +11,7 @@ class Compressor:
 		self.root = self.initializeTree(self.old_root, initialCnt)
 		
 	# Cnt変数を追加し、初期化
-	# 任意文字列に対応するために<any>を追加
+	# 任意文字列に対応する予定(まだできてない)
 	def initializeTree(self, root, initialCnt):
 		global newRoot
 		def recursiveFunc(node):
