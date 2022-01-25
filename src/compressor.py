@@ -28,6 +28,8 @@ class Compressor:
 		recursiveFunc(root)
 		return newRoot
 
+	# コマンド列の通りにツリーを走査
+	# ノードの到達回数を1追加し、符号の再計算を行う 
 	def countIncrement(self, cmdString):
 		cmdStringList = cmdString.split()
 		# node.childrenにNoneは入らない前提で書いているため、使う前にNoneかどうかチェックしないといけない
@@ -39,22 +41,27 @@ class Compressor:
 					n.cnt = n.cnt + 1
 					matchNode = n
 			if matchNode:
+				self.nodeHuffmanEncode(node)# 符号の再計算
 				return matchNode
 			else:
 				e = Exception('such a word doesn`t exist in these nodes')
 				raise e
 		_node = self.root
 		for s in cmdStringList:
-			_node = innerCntIncrement(_node, s)
 			if _node.children == None:
-				break
+				break			
+			_node = innerCntIncrement(_node, s)
+
 	# 全てのノードに対してハフマン符号再計算
-	def wholeHuffmanEncode(self, node):
-		children_tuple = node.children
-		if children_tuple:	
-			self.nodeHuffmanEncode(node)
-			for n in children_tuple:
-				self.wholeHuffmanEncode(n)
+	def wholeHuffmanEncode(self):
+		_node = self.root
+		def inner_wholeHuffmanEncode(node):
+			children_tuple = node.children
+			if children_tuple:	
+				self.nodeHuffmanEncode(node)
+				for n in children_tuple:
+					inner_wholeHuffmanEncode(n)
+		inner_wholeHuffmanEncode(_node)
 		
 
 	# nodeを指定してその子ノードに対してハフマン符号化する関数
@@ -95,11 +102,13 @@ class Compressor:
 		return recursive_work(self.root)
 
 c = Compressor('cmdTree_22-01-25-01-55.json', 1)
-
+c.wholeHuffmanEncode()
 c.countIncrement('access-profile ignore-sanity-checks <cr>')
 c.countIncrement('access-profile <cr>')
-
-c.wholeHuffmanEncode(c.root)
-print(RenderTree(c.root, maxlevel=10))
+print(RenderTree(c.root, maxlevel=5))
 print(c.encode('clear aaa cache filterserver acl\r\n'))
-
+for i in range(10):
+	c.countIncrement('clear aaa cache filterserver acl <cr>')
+	print(str(i) + ': ' + c.encode('clear aaa cache filterserver acl\r\n'))
+print(c.encode('clear aaa cache filterserver acl\r\n'))
+print(RenderTree(c.root, maxlevel=5))
