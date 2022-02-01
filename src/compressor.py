@@ -5,10 +5,11 @@ from anytree import *
 
 
 class Compressor:
-	def __init__(self, jsonFileName, initialCnt):
+	def __init__(self, jsonFileName, initialCnt, mode=None):
 		self.importer = JsonImporter(dictimporter=DictImporter(nodecls=AnyNode))
 		self.old_root = self.importer.read(open(jsonFileName, 'r'))
 		self.root = self.initializeTree(self.old_root, initialCnt)
+		self.mode = mode
 		
 	# Cnt変数を追加し、初期化
 	# 任意文字列に対応する予定(まだできてない)
@@ -30,6 +31,7 @@ class Compressor:
 	# ノードの到達回数を1追加し、符号の再計算を行う 
 	def countIncrement(self, cmdString):
 		cmdStringList = cmdString.split()
+		cmdStringList.append('<cr>')
 		# node.childrenにNoneは入らない前提で書いているため、使う前にNoneかどうかチェックしないといけない
 		def innerCntIncrement(node, cmd):
 			children_tuple = node.children
