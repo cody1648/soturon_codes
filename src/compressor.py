@@ -1,13 +1,19 @@
+import random
+import re
 from huffman import HuffmanCoding
 from huffman_encoder import HuffmanCoding
 from anytree.importer import *
 from anytree import *
 
 
+
 class Compressor:
-	def __init__(self, jsonFileName, initialCnt, mode=None):
+	def __init__(self, treeData, initialCnt, mode=None, isJson=False):
 		self.importer = JsonImporter(dictimporter=DictImporter(nodecls=AnyNode))
-		self.old_root = self.importer.read(open(jsonFileName, 'r'))
+		if isJson:
+			self.old_root = self.importer.read(open(treeData, 'r'))
+		else:
+			self.old_root = self.importer.import_(treeData)
 		self.root = self.initializeTree(self.old_root, initialCnt)
 		self.mode = mode
 		
@@ -30,22 +36,26 @@ class Compressor:
 	# コマンド列の通りにツリーを走査
 	# ノードの到達回数を1追加し、符号の再計算を行う 
 	def countIncrement(self, cmdString):
-		cmdStringList = cmdString.split()
-		cmdStringList.append('<cr>')
+		cmdStringList = re.sub(r'(\r?\n)|(\r\n?)',' <cr>',cmdString).split()
 		# node.childrenにNoneは入らない前提で書いているため、使う前にNoneかどうかチェックしないといけない
 		def innerCntIncrement(node, cmd):
-			children_tuple = node.children
-			matchNode = None
-			for n in children_tuple:
-				if cmd == n.name:
-					n.cnt = n.cnt + 1
-					matchNode = n
-			if matchNode:
-				self.nodeHuffmanEncode(node)# 符号の再計算
-				return matchNode
-			else:
-				e = Exception('such a word doesn`t exist in these nodes')
-				raise e
+			try:
+				children_tuple = node.children
+				matchNode = None
+				for n in children_tuple:
+					if cmd == n.name:
+						n.cnt = n.cnt + 1
+						matchNode = n
+				if matchNode:
+					self.nodeHuffmanEncode(node)# 符号の再計算
+					return matchNode
+				else:
+					e = Exception('such a word doesn`t exist in these nodes')
+					raise e
+			except:
+				import traceback
+				traceback.print_exc()
+
 		_node = self.root
 		for s in cmdStringList:
 			if _node.children == None:
@@ -78,25 +88,39 @@ class Compressor:
 	def encode(self, cmdString):
 		cmdStringList = cmdString.split()
 		cmdStringList.append('<cr>')
-		code = ''
 		
 		def recursive_work(node):
-			if node.children:
-				children_tuple = node.children
-				if cmdStringList:
-					tmpTopWord = cmdStringList.pop(0)
-					isExistWord = False
-					for n in children_tuple:
-						if n.name == tmpTopWord:
-							isExistWord = True
-							return n.code + recursive_work(n)
-					if not isExistWord:
-						raise Exception('This code is not suitable. maybe wrong words are included.')
+			try:
+				if node.children:
+					children_tuple = node.children
+					if cmdStringList:
+						tmpTopWord = cmdStringList.pop(0)
+						isExistWord = False
+						for n in children_tuple:
+							if n.name == tmpTopWord:
+								isExistWord = True
+								return n.code + recursive_work(n)
+						if not isExistWord:
+							raise Exception('This code is not suitable. maybe wrong words are included.')
+					else:
+						raise Exception('This code is not suitable. mayabe too short.')
 				else:
-					raise Exception('This code is not suitable. mayabe too short.')
-			else:
-				if cmdStringList:
-					raise Exception('This code is not suitable. mayabe too long.')
-				return ''
-					
+					if cmdStringList:
+						raise Exception('This code is not suitable. mayabe too long.')
+					return ''
+			except:
+				import traceback
+				traceback.print_exc()
 		return recursive_work(self.root)
+
+	def randomEncode(self):
+		cmdLength = 0
+		def inner_randomEncode(node):
+			nonlocal cmdLength
+			if node.is_leaf:
+				return ''
+			children = node.children
+			chosenNode = random.choice(children)
+			cmdLength += 1
+			return str(chosenNode.code) + inner_randomEncode(chosenNode)
+		return 	inner_randomEncode(self.root), cmdLength
