@@ -30,4 +30,5 @@ for i in range(1000):
     so.inputcommand_random(so.c.root)
 so.c.wholeHuffmanEncode()
 for i in range(20):
-    print(so.c.randomEncode())
+    tmp = so.c.randomEncode()
+    print(tmp + (round(len(tmp[0])/tmp[1], 2),))
