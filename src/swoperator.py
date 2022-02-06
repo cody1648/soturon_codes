@@ -26,7 +26,7 @@ class SWOperator:
         pass
 
 so = SWOperator()
-for i in range(1000):
+for i in range(100000):
     so.inputcommand_random(so.c.root)
 so.c.wholeHuffmanEncode()
 for i in range(20):
