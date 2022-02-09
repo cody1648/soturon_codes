@@ -1,5 +1,7 @@
 import random
 import re
+
+from matplotlib.pyplot import get
 from huffman import HuffmanCoding
 from huffman_encoder import HuffmanCoding
 from anytree.importer import *
@@ -124,3 +126,43 @@ class Compressor:
 			cmdLength += 1
 			return str(chosenNode.code) + inner_randomEncode(chosenNode)
 		return 	inner_randomEncode(self.root), cmdLength
+	
+	def getCmd_zipf(self, isAll=False):
+		def getCmd(node):
+			if node.is_leaf:
+				return ''
+			children = node.children
+			chosenNode = random.choice(children)
+			return chosenNode.name + ' ' + getCmd(chosenNode)
+		if isAll:
+			return getCmd(self.root)[:-1]
+		else:
+			while True: 
+				if '<cr>' in (cmd := getCmd(self.root)):
+					return cmd[:-1]
+			
+
+	def randomEncode_zipf(self):
+		cmdLength = 0
+		def inner_randomEncode(node):
+			nonlocal cmdLength
+			if node.is_leaf:
+				return ''
+			children = node.children
+			prob_list = []
+			prob_max = 1
+			for i in range(len(children)):
+				prob_list.append(prob_max / (i + 1))
+			chosenNode = random.choices(children, prob_list, k=1)[0]
+			cmdLength += 1
+			return str(chosenNode.code) + inner_randomEncode(chosenNode)
+		return 	inner_randomEncode(self.root), cmdLength
+
+	def clearCnt(self):
+		def recursiveFunc(node):
+			node.cnt = 1
+			if node.children == None:
+				return
+			for n in node.children:
+				recursiveFunc(n)
+		recursiveFunc(self.root)
